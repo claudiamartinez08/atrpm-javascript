@@ -1,11 +1,14 @@
 const form = document.querySelector('#item-form');
 const input = document.querySelector('#item-input');
-const items = [];
+const items = JSON.parse(localStorage.getItem('items')) || []
 const list = document.querySelector('#item-list');
 const listItems = list.querySelectorAll('li');
 const clearButton = document.querySelector('#clear-button');
 const filter = document.querySelector('.filter')
 const filterInput = document.querySelector('#filter')
+const formButton = document.querySelector('.btn')
+let editMode = false
+let editedItem
 
 const itemTemplate = (element) => `
     <li>
@@ -16,6 +19,11 @@ const itemTemplate = (element) => `
     </li>
 `;
 
+const initApp = () => {
+    items.map((item)=> {
+        list.insertAdjacentHTML('beforeend', itemTemplate(item));
+    })
+}
 const checkNumberOfItems = () => {
     if(items.length === 0) {
         clearButton.style.display = 'none';
@@ -45,6 +53,24 @@ const removeAllElements = () => {
     items.length = 0;
 }
 
+const setEditMode = (item) => {
+    editMode = true
+    formButton.style.backgroundColor = "blue"
+    formButton.innerText = "Edit Item"
+    item.style.backgroundColor = "green"
+    input.focus()
+    input.style.borderColor = "blue"
+    input.value = item.innerText
+    editedItem = item
+}
+const setDefaultMode = (item) => {
+    editMode = false
+    formButton.style.backgroundColor = "black"
+    formButton.innerText = "+ Add Item"
+    item.style.backgroundColor = "transparent"
+    input.style.borderColor = "none"
+    input.value = ''
+}
 const filterElements = (inputValue) => {
     const listItems = list.querySelectorAll('li');
     listItems.forEach((i)=> {
@@ -57,29 +83,47 @@ const filterElements = (inputValue) => {
 }
 
 // Event Listeners
+
 form.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (input.value !== '') {
-        items.push(input.value);
-        addElement(input.value);
-        input.value = '';
-        checkNumberOfItems()
+    
+    if(editMode) {
+        editedItem.childNodes[0].nodeValue = input.value;
+        setDefaultMode(editedItem)
+    } else {
+        if (input.value !== '') {
+            items.push(input.value);
+            addElement(input.value);
+            input.value = '';
+            checkNumberOfItems()
+            localStorage.setItem('items', JSON.stringify(items))
+        }
     }
+       
 });
 
 list.addEventListener('click', (e) => {
     if (e.target.classList.contains('fa-solid')) {
         removeElement(e.target);
         checkNumberOfItems()
-    }
+        localStorage.setItem('items', JSON.stringify(items))
+    } else {
+        setEditMode(e.target)
+    }    
 });
+
 
 clearButton.addEventListener('click', ()=> {
     removeAllElements()
     checkNumberOfItems()
+    localStorage.removeItem('items')
+
 })
 
 filterInput.addEventListener('keyup', (e) => {
     const inputValue = e.target.value
     filterElements(inputValue)
 });
+
+
+initApp()
