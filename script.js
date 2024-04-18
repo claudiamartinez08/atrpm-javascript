@@ -9,6 +9,7 @@ const filterInput = document.querySelector('#filter')
 const formButton = document.querySelector('.btn')
 let editMode = false
 let editedItem
+let itemToEdit
 
 const itemTemplate = (element) => `
     <li>
@@ -54,12 +55,16 @@ const removeAllElements = () => {
 }
 
 const setEditMode = (item) => {
+    const listItems = list.querySelectorAll('li');
     editMode = true
-    formButton.style.backgroundColor = "blue"
+    formButton.classList.add('edition-mode')
     formButton.innerText = "Edit Item"
-    item.style.backgroundColor = "green"
+    console.log(listItems)
+    listItems.forEach((i)=> i.classList.remove('edition-mode'))
+    console.log(item)
+    item.classList.add('edition-mode')
     input.focus()
-    input.style.borderColor = "blue"
+    input.style.borderColor = "#9EB3C2"
     input.value = item.innerText
     editedItem = item
 }
@@ -82,16 +87,23 @@ const filterElements = (inputValue) => {
     })
 }
 
+const preventDuplicatedItems = (value) => {
+    return items.includes(value)
+}
+
 // Event Listeners
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
     
-    if(editMode) {
+    if(editMode && !preventDuplicatedItems(input.value)) {
+        
+        items[items.indexOf(itemToEdit)] = input.value
+        localStorage.setItem('items', JSON.stringify(items))
         editedItem.childNodes[0].nodeValue = input.value;
         setDefaultMode(editedItem)
     } else {
-        if (input.value !== '') {
+        if (input.value !== '' && !preventDuplicatedItems(input.value)) {
             items.push(input.value);
             addElement(input.value);
             input.value = '';
@@ -107,9 +119,10 @@ list.addEventListener('click', (e) => {
         removeElement(e.target);
         checkNumberOfItems()
         localStorage.setItem('items', JSON.stringify(items))
-    } else {
+    } else if(e.target.nodeName === 'LI') {
         setEditMode(e.target)
-    }    
+        itemToEdit = editedItem.innerText
+    }   
 });
 
 
