@@ -95,23 +95,22 @@ const preventDuplicatedItems = (value) => {
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    if(editMode && !preventDuplicatedItems(input.value)) {
-        
-        items[items.indexOf(itemToEdit)] = input.value
-        localStorage.setItem('items', JSON.stringify(items))
-        editedItem.childNodes[0].nodeValue = input.value;
-        setDefaultMode(editedItem)
-    } else {
-        if (input.value !== '' && !preventDuplicatedItems(input.value)) {
-            items.push(input.value);
-            addElement(input.value);
-            input.value = '';
-            checkNumberOfItems()
+    if (!preventDuplicatedItems(input.value)) {
+        if(editMode) {
+            items[items.indexOf(itemToEdit)] = input.value
             localStorage.setItem('items', JSON.stringify(items))
+            editedItem.childNodes[0].nodeValue = input.value;
+            setDefaultMode(editedItem)
+        } else if (input.value !== '') {
+                items.push(input.value);
+                addElement(input.value);
+                input.value = '';
+                checkNumberOfItems()
+                localStorage.setItem('items', JSON.stringify(items))
         }
+    } else {
+            alert(`Ya tienes ${input.value} en la lista`);
     }
-       
 });
 
 list.addEventListener('click', (e) => {
